@@ -1,42 +1,55 @@
 // utils/validation.js
 import { rateLimit } from './rate-limit.js';
+import { SecurityUtils } from './security.utils.js';
+import { SECURITY_CONFIG } from '../config/security.config.js';
 
-// Enhanced mobile validation for Egyptian numbers
+// Enhanced mobile validation for Egyptian numbers with security
 export const validateMobile = (mobile) => {
     if (!mobile || typeof mobile !== 'string') return false;
 
+    // Sanitize input first
+    const sanitizedMobile = SecurityUtils.sanitizeInput(mobile);
+    
     // Remove all spaces and special characters
-    const cleanMobile = mobile.replace(/[\s\-\(\)]/g, '');
+    const cleanMobile = sanitizedMobile.replace(/[\s\-\(\)]/g, '');
 
-    // Egyptian mobile patterns
-    const patterns = [
-        /^(\+2)?010[0-9]{8}$/, // Vodafone
-        /^(\+2)?011[0-9]{8}$/, // Etisalat
-        /^(\+2)?012[0-9]{8}$/, // Orange
-        /^(\+2)?015[0-9]{8}$/  // We
-    ];
+    // Validate length to prevent DoS
+    if (cleanMobile.length > 20) return false;
 
-    return patterns.some(pattern => pattern.test(cleanMobile));
+    // Egyptian mobile patterns from security config
+    return SECURITY_CONFIG.VALIDATION.MOBILE_PATTERNS.some(pattern => 
+        pattern.test(cleanMobile)
+    );
 };
 
-// Enhanced password validation
+// Enhanced password validation with strength checking
 export const validatePassword = (password) => {
     if (!password || typeof password !== 'string') {
         return { isValid: false, message: "Password is required" };
     }
 
+    // Check password length limits
+    const config = SECURITY_CONFIG.PASSWORD;
+    if (password.length < config.MIN_LENGTH) {
+        return { isValid: false, message: `يجب أن تكون كلمة المرور ${config.MIN_LENGTH} أحرف على الأقل` };
+    }
+
+    if (password.length > config.MAX_LENGTH) {
+        return { isValid: false, message: "كلمة المرور طويلة جداً" };
+    }
+
+    // Use security utils for strength checking
+    const strengthCheck = SecurityUtils.checkPasswordStrength(password);
+    
     const checks = {
-        length: password.length >= 8,
-        lowercase: /[a-z]/.test(password),
-        uppercase: /[A-Z]/.test(password),
-        number: /\d/.test(password),
+        length: password.length >= config.MIN_LENGTH,
+        lowercase: config.REQUIRE_LOWERCASE ? /[a-z]/.test(password) : true,
+        uppercase: config.REQUIRE_UPPERCASE ? /[A-Z]/.test(password) : true,
+        number: config.REQUIRE_NUMBERS ? /\d/.test(password) : true,
         noSpaces: !/\s/.test(password),
-        validChars: /^[A-Za-z\d@$!%*?&]*$/.test(password)
+        validChars: new RegExp(`^[A-Za-z\\d${config.ALLOWED_SPECIAL_CHARS.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}]*$`).test(password)
     };
 
-    if (!checks.length) {
-        return { isValid: false, message: "يجب أن تكون كلمة المرور 8 أحرف على الأقل" };
-    }
     if (!checks.lowercase) {
         return { isValid: false, message: "يجب أن تحتوي كلمة المرور على حرف صغير" };
     }
@@ -53,7 +66,12 @@ export const validatePassword = (password) => {
         return { isValid: false, message: "كلمة المرور تحتوي على أحرف غير مسموحة" };
     }
 
-    return { isValid: true };
+    // Return strength information
+    return { 
+        isValid: true, 
+        strength: strengthCheck.strength,
+        score: strengthCheck.score
+    };
 };
 
 // Enhanced OTP validation
@@ -62,15 +80,9 @@ export const validateOTP = (otp) => {
     return /^\d{6}$/.test(otp.trim());
 };
 
-// Enhanced input sanitization
+// Enhanced input sanitization using security utilities
 export const sanitizeInput = (input) => {
-    if (!input || typeof input !== 'string') return '';
-
-    return input
-        .trim()
-        .replace(/[<>\"'`]/g, '') // Remove potential XSS characters
-        .replace(/[\x00-\x1f\x7f]/g, '') // Remove control characters
-        .slice(0, 1000); // Limit length to prevent DoS
+    return SecurityUtils.sanitizeInput(input);
 };
 
 // Validate name fields
