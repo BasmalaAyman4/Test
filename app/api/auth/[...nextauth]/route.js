@@ -103,16 +103,34 @@ const authOptions = {
 
   events: {
     async signOut({ token }) {
-      if (token.accessToken) {
-        await invalidateTokenOnAPI(token.accessToken);
+      try {
+        if (token?.accessToken) {
+          // Invalidate token on the API server
+          await invalidateTokenOnAPI(token.accessToken);
+          
+          // Log the signout event
+          if (process.env.NODE_ENV === 'development') {
+            console.log('User signed out, token invalidated');
+          }
+        }
+      } catch (error) {
+        // Don't block signout if token invalidation fails
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Token invalidation failed during signout:', error);
+        }
       }
     },
     async signIn({ user, account, profile }) {
-      console.log("Sign in event:", { user: user.id, account: account?.provider });
+      if (process.env.NODE_ENV === 'development') {
+        console.log("Sign in event:", { user: user?.id, account: account?.provider });
+      }
       return true;
     },
     async session({ session, token }) {
-      console.log("Session event:", { userId: session.user?.id });
+      // Only log in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log("Session event:", { userId: session?.user?.id });
+      }
       return true;
     }
   },
