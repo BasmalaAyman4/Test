@@ -12,7 +12,7 @@ export const API_CONFIG = {
         USER_DATA: '/UserData',
         VERIFY_TOKEN: '/Auth/verify',
         LOGOUT: '/Auth/logout',
-        REFRESH_TOKEN: '/Auth/refresh'
+        REFRESH_TOKEN: '/Auth/refreshToken'
     },
     DEFAULT_HEADERS: {
         'Content-Type': 'application/json',

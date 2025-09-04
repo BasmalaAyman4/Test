@@ -25,26 +25,12 @@ function getLocale(request) {
 
 function addSecurityHeaders(response) {
   const headers = {
-    // Existing headers
     'X-Frame-Options': 'DENY',
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'X-XSS-Protection': '1; mode=block',
-    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-    
-    // Enhanced security headers
-    'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
-    'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.lajolie-eg.com https://www.google-analytics.com; frame-ancestors 'none';",
-    'X-Permitted-Cross-Domain-Policies': 'none',
-    'Cross-Origin-Embedder-Policy': 'require-corp',
-    'Cross-Origin-Opener-Policy': 'same-origin',
-    'Cross-Origin-Resource-Policy': 'same-origin'
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()'
   };
-
-  // Only add HSTS in production with HTTPS
-  if (process.env.NODE_ENV === 'production') {
-    headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload';
-  }
 
   Object.entries(headers).forEach(([key, value]) => {
     response.headers.set(key, value);

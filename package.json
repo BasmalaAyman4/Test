@@ -5,8 +5,16 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
+    "build:prod": "NODE_ENV=production next build -c next.config.prod.mjs",
     "start": "next start",
-    "lint": "eslint"
+    "start:prod": "NODE_ENV=production next start",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "security:audit": "npm audit",
+    "security:fix": "npm audit fix",
+    "analyze": "ANALYZE=true npm run build:prod",
+    "type-check": "echo 'Type checking not configured'",
+    "test:security": "echo 'Security tests not implemented yet'"
   },
   "dependencies": {
     "@formatjs/intl-localematcher": "^0.6.1",

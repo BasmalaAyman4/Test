@@ -16,9 +16,6 @@ class JsonApiClient {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'User-Agent': 'Mozilla/5.0 (compatible; LaJolie-WebApp/1.0)',
-            'X-Requested-With': 'XMLHttpRequest',
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
             ...extraHeaders
         };
 
