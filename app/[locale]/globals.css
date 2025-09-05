@@ -13,6 +13,12 @@
   --text-error:#fff;
   --screen:#fff;
   --text-screen:#2D3142;
+  --color-black: black;
+    --color-white: white;
+    --color-grey: #e8e8e8;
+    --time: 4s;
+    --time-s: 0.3s;
+    --vw: 60vw;
 }
 body{
 font-family: "Alexandria", serif !important;
@@ -68,3 +74,13 @@ svg {
 input::placeholder{
   font-family: "Alexandria", serif !important;
 }
+
+
+
+
+@media (max-width: 768px) {
+  :root {
+    --size-height: 54px;
+  }
+}
+

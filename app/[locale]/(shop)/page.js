@@ -2,20 +2,26 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { getServerSession } from "next-auth/next";
 import { serverGetProductBundle, serverGetHome } from "@/lib/api/server";
-
+import BannerWithClient from "@/components/shop/BannerWithClient";
+import SaleBanner from "@/components/common/SaleBanner";
+import ScrollingBanner from "@/components/common/ScrollingBanner";
 export default async function HomePage({ params }) {
       const { locale } = await params;
       const dictionary = await getDictionary(locale)
   const session = await getServerSession(authOptions);
 console.log(session)
-  const [home, productBundle] = await Promise.all([
+  const results = await Promise.allSettled([
     serverGetHome(locale),
     serverGetProductBundle(locale)
-  ]) 
+  ]);
+  const [home, productBundle] = results;
   console.log(home)
   return (
     <>
-<p>hjhgjhgjhg</p>
+    <SaleBanner />
+      <BannerWithClient banners={home.status === "fulfilled" ? home.value.banners : []}/>
+<ScrollingBanner/>
+      
     </>
   )
 }
