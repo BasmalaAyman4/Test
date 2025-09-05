@@ -7,7 +7,7 @@ class JsonApiClient {
         this.timeout = timeout;
     }
 
-    async request(endpoint, method, data, extraHeaders = {}) {
+    async request(endpoint, method, data, extraHeaders = {}, retryCount = 0) {
         const url = `${this.baseURL}${endpoint}`;
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), this.timeout);
@@ -38,7 +38,8 @@ class JsonApiClient {
                 url,
                 method,
                 headers: { ...headers, Authorization: headers.Authorization ? '[REDACTED]' : undefined },
-                data: data ? { ...data, password: data.password ? '[REDACTED]' : data.password } : undefined
+                data: data ? { ...data, password: data.password ? '[REDACTED]' : data.password } : undefined,
+                attempt: retryCount + 1
             });
 
             const response = await fetch(url, requestConfig);
@@ -48,13 +49,22 @@ class JsonApiClient {
             if (!response.ok) {
                 const errorText = await response.text();
                 console.error(`API Error ${response.status}:`, errorText);
+                
+                // Retry on server errors (5xx) but not client errors (4xx)
+                if (response.status >= 500 && retryCount < API_CONFIG.RETRY_ATTEMPTS) {
+                    console.log(`Retrying request (attempt ${retryCount + 2}/${API_CONFIG.RETRY_ATTEMPTS + 1})`);
+                    await new Promise(resolve => setTimeout(resolve, API_CONFIG.RETRY_DELAY * Math.pow(2, retryCount)));
+                    return this.request(endpoint, method, data, extraHeaders, retryCount + 1);
+                }
+                
                 throw new ApiError(response.status, errorText);
             }
 
             const responseData = await response.json();
             console.log('API response successful:', {
                 status: response.status,
-                data: responseData
+                data: responseData,
+                attempt: retryCount + 1
             });
 
             return responseData;
@@ -62,7 +72,20 @@ class JsonApiClient {
             clearTimeout(timeoutId);
 
             if (error.name === 'AbortError') {
+                // Retry on timeout if we have attempts left
+                if (retryCount < API_CONFIG.RETRY_ATTEMPTS) {
+                    console.log(`Request timeout, retrying (attempt ${retryCount + 2}/${API_CONFIG.RETRY_ATTEMPTS + 1})`);
+                    await new Promise(resolve => setTimeout(resolve, API_CONFIG.RETRY_DELAY * Math.pow(2, retryCount)));
+                    return this.request(endpoint, method, data, extraHeaders, retryCount + 1);
+                }
                 throw new ApiError(408, 'Request timeout');
+            }
+
+            // Retry on network errors
+            if (error.name === 'TypeError' && error.message.includes('fetch') && retryCount < API_CONFIG.RETRY_ATTEMPTS) {
+                console.log(`Network error, retrying (attempt ${retryCount + 2}/${API_CONFIG.RETRY_ATTEMPTS + 1})`);
+                await new Promise(resolve => setTimeout(resolve, API_CONFIG.RETRY_DELAY * Math.pow(2, retryCount)));
+                return this.request(endpoint, method, data, extraHeaders, retryCount + 1);
             }
 
             throw error;

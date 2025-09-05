@@ -14,7 +14,7 @@ export class SecurityUtils {
     try {
       const algorithm = SECURITY_CONFIG.ENCRYPTION.ALGORITHM;
       const iv = crypto.randomBytes(SECURITY_CONFIG.ENCRYPTION.IV_LENGTH);
-      const cipher = crypto.createCipher(algorithm, key, iv);
+      const cipher = crypto.createCipherGCM(algorithm, key, iv);
       
       let encrypted = cipher.update(text, 'utf8', 'hex');
       encrypted += cipher.final('hex');
@@ -43,7 +43,7 @@ export class SecurityUtils {
       const { encrypted, iv, tag } = encryptedData;
       const algorithm = SECURITY_CONFIG.ENCRYPTION.ALGORITHM;
       
-      const decipher = crypto.createDecipher(algorithm, key, Buffer.from(iv, 'hex'));
+      const decipher = crypto.createDecipherGCM(algorithm, key, Buffer.from(iv, 'hex'));
       decipher.setAuthTag(Buffer.from(tag, 'hex'));
       
       let decrypted = decipher.update(encrypted, 'hex', 'utf8');
