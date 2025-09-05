@@ -5,6 +5,7 @@ import { serverGetProductBundle, serverGetHome } from "@/lib/api/server";
 import BannerWithClient from "@/components/shop/BannerWithClient";
 import SaleBanner from "@/components/common/SaleBanner";
 import ScrollingBanner from "@/components/common/ScrollingBanner";
+import CategoriesHome from "@/components/shop/CategoriesHome";
 export default async function HomePage({ params }) {
       const { locale } = await params;
       const dictionary = await getDictionary(locale)
@@ -20,8 +21,9 @@ console.log(session)
     <>
     <SaleBanner />
       <BannerWithClient banners={home.status === "fulfilled" ? home.value.banners : []}/>
-<ScrollingBanner/>
-      
+      <ScrollingBanner/>
+      <CategoriesHome categories={home.status==='fulfilled' ? home.value.categories : []}/>
+
     </>
   )
 }
