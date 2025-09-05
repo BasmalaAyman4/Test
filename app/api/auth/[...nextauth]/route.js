@@ -21,11 +21,6 @@ const authOptions = {
             console.error("Missing credentials in authorize");
             return null;
           }
-
-          console.log("Authorizing user:", { id: credentials.id, mobile: credentials.mobile });
-
-        
-
           return {
             id: credentials.id,
             mobile: credentials.mobile,
@@ -124,7 +119,7 @@ const authOptions = {
         secure: process.env.NODE_ENV === 'production',
         maxAge: 24 * 60 * 60, // 24 hours
         // Remove domain setting for localhost
-        ...(process.env.NODE_ENV === 'production' && { domain: '.yourdomain.com' })
+        ...(process.env.NODE_ENV === 'production' && { domain: '.lajolie-eg.com' })
       }
     },
     callbackUrl: {
@@ -176,26 +171,25 @@ const authOptions = {
       return true;
     }
   },
+
+  /* events: {
+    async signOut({ token }) {
+      // اختياري: إشعار السيرفر بتسجيل الخروج
+      if (token?.accessToken) {
+        try {
+          await fetch('https://api.lajolie-eg.com/api/Auth/logout', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token.accessToken}`
+            }
+          });
+        } catch (error) {
+          console.log('Server logout notification failed');
+        }
+      }
+    } */
 };
 
-// Helper function to verify token with your API
-async function verifyTokenWithAPI(token) {
-  try {
-    const response = await fetch(`${process.env.API_BASE_URL}/auth/verify`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ token })
-    });
-
-    return response.ok;
-  } catch (error) {
-    console.error('Token verification failed:', error);
-    return false;
-  }
-}
 
 // Helper function to refresh access token
 async function refreshAccessToken(token) {
@@ -213,7 +207,7 @@ async function refreshAccessToken(token) {
       const data = await response.json();
       return {
         accessToken: data.accessToken || data.token,
-        refreshToken: data.refreshToken
+        refreshToken: data.refreshToken || data.token
       };
     }
     return null;

@@ -3,6 +3,8 @@ import "./globals.css";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { Alexandria } from 'next/font/google';
 import SessionProviderWrapper from "@/components/common/SessionProviderWrapper";
+import Head from "next/head";
+import Header from "@/components/Layout/Header";
  const alexandria = Alexandria({
   weight: ['200', '400', '700'],
   subsets: ['latin'],
@@ -27,7 +29,7 @@ export default async  function RootLayout({ children, params }) {
       <body style={{margin:0}} suppressHydrationWarning={true} className={alexandria.className}>
           <SessionProviderWrapper>
 
-   
+   <Header  dictionary={dictionary} locale={locale}/>
         {children}
                 </SessionProviderWrapper>
 

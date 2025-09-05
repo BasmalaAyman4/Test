@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { withAuth } from "next-auth/middleware";
 import { match } from '@formatjs/intl-localematcher';
 import Negotiator from 'negotiator';
-import {
+ import {
   isProtectedPath,
   isPublicPath,
   getLocaleFromPathname,

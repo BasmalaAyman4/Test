@@ -85,6 +85,7 @@ export const SECURITY_CONFIG = {
     MAX_INPUT_LENGTH: 1000,
     MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
     ALLOWED_FILE_TYPES: ['image/jpeg', 'image/png', 'image/gif'],
+
     MOBILE_PATTERNS: [
       /^(\+2)?010[0-9]{8}$/, // Vodafone
       /^(\+2)?011[0-9]{8}$/, // Etisalat
@@ -108,8 +109,8 @@ export const SECURITY_CONFIG = {
     RETRY_DELAY: 1000, // 1 second
     ALLOWED_ORIGINS: [
       'http://localhost:3000',
-      'https://yourdomain.com',
-      'https://www.yourdomain.com'
+      'https://lajolie-eg.com',
+      'https://www.lajolie-eg.com'
     ],
   },
 };

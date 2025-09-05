@@ -95,31 +95,3 @@ export function rateLimit(options = {}) {
         }
     };
 }
-
-// For production, use this Redis-based version instead:
-/*
-import Redis from 'ioredis';
-
-const redis = new Redis(process.env.REDIS_URL);
-
-export function rateLimit(options = {}) {
-  const { interval = 60000, uniqueTokenPerInterval = 500 } = options;
-
-  return {
-    async check(limit, token) {
-      const key = `rate_limit:${token}`;
-      const current = await redis.incr(key);
-      
-      if (current === 1) {
-        await redis.expire(key, Math.ceil(interval / 1000));
-      }
-      
-      if (current > limit) {
-        throw new Error(`Rate limit exceeded: ${current}/${limit}`);
-      }
-      
-      return { count: current };
-    }
-  };
-}
-*/
