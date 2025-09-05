@@ -2,12 +2,12 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { useParams } from "next/navigation";
-import { getDictionary } from '../i18n/dictionaries'; // Fixed path
+import { getDictionary } from '../lib/i18n/dictionaries'; // Fixed path
 
 export function useDictionary() {
   const params = useParams();
   const locale = params.locale || 'en'; // Add fallback
-  
+
   const [dictionary, setDictionary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

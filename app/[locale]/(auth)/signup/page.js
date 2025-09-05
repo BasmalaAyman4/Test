@@ -1,6 +1,6 @@
 "use client";
 import { useState, useCallback } from "react";
-import { useAuth } from "@/lib/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import authimg from "@/assets/auth.jpg";
@@ -9,13 +9,13 @@ import Link from "next/link";
 import Image from "next/image";
 import OtpInput from "react-otp-input";
 import SubmitButton from "@/components/ui/SubmitButton";
-import { useDictionary } from "@/lib/hooks/useDirection";
+import { useDictionary } from "@/hooks/useDirection";
 
 const SignupForm = () => {
   const router = useRouter();
   const { signup, verifyOTP, setPassword, setPersonalInfo, loading, error, clearError } = useAuth();
-  const { dictionary, loading: dictLoading, t, locale } = useDictionary(); 
-const langCode = locale=='en'?'2':'1'
+  const { dictionary, loading: dictLoading, t, locale } = useDictionary();
+  const langCode = locale == 'en' ? '2' : '1'
   const [currentStep, setCurrentStep] = useState(0);
   const [otp, setOtp] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -51,7 +51,7 @@ const langCode = locale=='en'?'2':'1'
     e.preventDefault();
     if (loading) return;
 
-    const result = await signup(formData.mobile,langCode);
+    const result = await signup(formData.mobile, langCode);
     if (result.success) {
       setUserId(result.userId);
       handleNext();
@@ -63,7 +63,7 @@ const langCode = locale=='en'?'2':'1'
     e.preventDefault();
     if (loading) return;
 
-    const result = await verifyOTP(userId, otp,langCode);
+    const result = await verifyOTP(userId, otp, langCode);
     if (result.success) {
       handleNext();
     }
@@ -74,7 +74,7 @@ const langCode = locale=='en'?'2':'1'
     e.preventDefault();
     if (loading) return;
 
-    const result = await setPassword(userId, formData.password,langCode);
+    const result = await setPassword(userId, formData.password, langCode);
     if (result.success) {
       setUserData(result.userData);
       handleNext();
@@ -93,7 +93,7 @@ const langCode = locale=='en'?'2':'1'
       gender: formData.gender
     };
 
-    const result = await setPersonalInfo(userData.token, personalData,langCode);
+    const result = await setPersonalInfo(userData.token, personalData, langCode);
     if (result.success) {
       await signIn("credentials", {
         redirect: false,

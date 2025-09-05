@@ -1,19 +1,19 @@
 "use client";
 import { useState, useCallback } from "react";
-import { useAuth } from "@/lib/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import authimg from "@/assets/auth.jpg";
 import styles from "@/styles/auth/auth.module.css";
 import Link from "next/link";
 import Image from "next/image";
 import SubmitButton from "@/components/ui/SubmitButton";
 import { useParams } from "next/navigation";
-import { useDictionary } from "@/lib/hooks/useDirection";
+import { useDictionary } from "@/hooks/useDirection";
 
 export default function LoginForm() {
   const params = useParams();
-  const { dictionary, loading: dictLoading, t, locale } = useDictionary(); 
+  const { dictionary, loading: dictLoading, t, locale } = useDictionary();
   console.log(dictionary)
-  
+
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ mobile: "", password: "" });
   const langCode = locale === 'en' ? '2' : '1';
@@ -57,7 +57,7 @@ export default function LoginForm() {
 
         <div>
           <h2 className={styles.signup__title}>
-          {t('auth.welcomeBack')}
+            {t('auth.welcomeBack')}
           </h2>
 
           <p className={styles.auth__para}>
@@ -99,12 +99,12 @@ export default function LoginForm() {
                 onClick={togglePasswordVisibility}
                 className={styles.pass__body}
                 disabled={loading}
-                 style={{
-                      background: "none",
-                      border: "none",
-                      padding: "4px 8px",
-                      cursor: "pointer",
-                    }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  padding: "4px 8px",
+                  cursor: "pointer",
+                }}
               >
                 {showPassword ? (t('auth.Hide') || "Hide") : (t('auth.Show') || "Show")}
               </button>
