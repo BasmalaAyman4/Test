@@ -128,12 +128,12 @@ const ProductDetailsClient = memo(({ product, locale = 'ar' }) => {
 
             <div className={styles.productContainer}>
                 {/* Image Section */}
-                {
-                    currentImages.map(im=>(
-                        <Image key={im.imageId} alt='' src={im.fileLink} height={500} width={500} />
-
-                    ))
-                }
+                <ImageGallery
+                    images={currentImages}
+                    selectedImageIndex={selectedImageIndex}
+                    onImageChange={handleImageChange}
+                    onImageClick={handleImageClick}
+                />
 
                 {/* Product Info Section */}
                 <ProductInfo
