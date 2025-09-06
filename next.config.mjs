@@ -14,7 +14,7 @@ const nextConfig = {
                 protocol: 'https',
                 hostname: 'api.lajolie-eg.com',
                 port: '',
-                pathname: '/LajolieData/ItemsImage/**',
+                pathname: '/LajolieData/ProductFiles/**',
             },
             // Add fallback patterns for common image CDNs
             {
@@ -27,6 +27,7 @@ const nextConfig = {
             }
         ],
     },
+    
 };
 
 export default nextConfig;

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 export const useImagePreloader = (images = []) => {
     const [loadedImages, setLoadedImages] = useState(new Set());
     const [isLoading, setIsLoading] = useState(false);
@@ -9,7 +9,7 @@ export const useImagePreloader = (images = []) => {
             img.onload = () => resolve(src);
             img.onerror = reject;
             img.src = src;
-            img.crossOrigin = 'anonymous'; // Handle CORS
+            img.crossOrigin = 'anonymous';
         });
     }, []);
 
@@ -34,8 +34,8 @@ export const useImagePreloader = (images = []) => {
         }
     }, [preloadImage]);
 
-    // Preload images when they change
-    useState(() => {
+    // Use useEffect instead of useState for side effects
+    useEffect(() => {
         const imageSources = images
             ?.filter(img => img?.fileLink)
             ?.map(img => img.fileLink);

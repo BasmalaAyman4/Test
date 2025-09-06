@@ -28,11 +28,17 @@ const ProductImage = memo(({
         setHasError(true);
     }, []);
 
-    // Fix for CORS issue: Use Next.js Image Optimization
-    const getOptimizedImageSrc = (src) => {
+    // Use proxy for external images to avoid CORS issues
+    const getProxiedImageSrc = (src) => {
         if (!src) return '/placeholder-image.jpg';
-        // Use Next.js Image Optimization API to handle CORS
-        return `/_next/image?url=${encodeURIComponent(src)}&w=800&q=75`;
+
+        // لو الصورة جاية من API → اعملها proxy
+        if (src.startsWith('http')) {
+            return `/api/image-proxy?url=${encodeURIComponent(src)}`;
+        }
+
+        // الصور المحلية (من public)
+        return src;
     };
 
     if (!image?.fileLink || hasError) {
@@ -49,7 +55,7 @@ const ProductImage = memo(({
         <div className={styles.imageWrapper}>
             {isLoading && <div className={styles.imageSkeleton} />}
             <Image
-                src={getOptimizedImageSrc(image.fileLink)}
+                src={getProxiedImageSrc(image.fileLink)}
                 alt={alt || 'Product image'}
                 fill
                 className={className}
@@ -58,7 +64,7 @@ const ProductImage = memo(({
                 onError={handleError}
                 onClick={onClick}
                 sizes="(max-width: 768px) 100vw, 50vw"
-                unoptimized={false} // Use Next.js optimization
+                quality={85}
             />
             {onClick && !isLoading && (
                 <button className={styles.zoomButton} onClick={onClick}>
@@ -80,6 +86,18 @@ export const ImageGallery = memo(({
     onImageChange,
     onImageClick
 }) => {
+    const getProxiedImageSrc = (src) => {
+        if (!src) return '/placeholder-image.jpg';
+
+        // لو الصورة جاية من API → اعملها proxy
+        if (src.startsWith('http')) {
+            return `/api/image-proxy?url=${encodeURIComponent(src)}`;
+        }
+
+        // الصور المحلية (من public)
+        return src;
+    };
+
     return (
         <div className={styles.imageSection}>
             <div className={styles.mainImageContainer}>
@@ -114,12 +132,12 @@ export const ImageGallery = memo(({
                             aria-label={`View image ${index + 1}`}
                         >
                             <Image
-                                src={`/_next/image?url=${encodeURIComponent(image.fileLink || '/placeholder-image.jpg')}&w=150&q=60`}
+                                src={getProxiedImageSrc(image.fileLink)}
                                 alt={`${productName} view ${index + 1}`}
                                 fill
                                 className={styles.thumbnailImage}
                                 sizes="100px"
-                                unoptimized={false}
+                                quality={60}
                             />
                         </button>
                     ))}
