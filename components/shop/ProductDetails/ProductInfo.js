@@ -53,14 +53,14 @@ export const ProductInfo = memo(({
                 </div>
             </div>
 
-            <h1 className={styles.title}>{product.name}</h1>
+            <h1 className={styles.productTitle}>{product.name}</h1>
 
             <StarRating
                 rating={product.rate || 0}
                 reviewCount={product.productReviews?.length || 0}
             />
 
-            <div className={styles.priceContainer}>
+            <div className={styles.priceSection}>
                 <span className={styles.currentPrice}>
                     {formatPrice(displayPrice)}
                 </span>

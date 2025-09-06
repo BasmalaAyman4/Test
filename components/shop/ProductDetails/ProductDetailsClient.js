@@ -127,7 +127,6 @@ const ProductDetailsClient = memo(({ product, locale = 'ar' }) => {
             </nav>
 
             <div className={styles.productContainer}>
-                {/* Image Section */}
                 <ImageGallery
                     images={currentImages}
                     selectedImageIndex={selectedImageIndex}
@@ -135,7 +134,6 @@ const ProductDetailsClient = memo(({ product, locale = 'ar' }) => {
                     onImageClick={handleImageClick}
                 />
 
-                {/* Product Info Section */}
                 <ProductInfo
                     product={product}
                     selectedColor={selectedColor}
@@ -150,8 +148,6 @@ const ProductDetailsClient = memo(({ product, locale = 'ar' }) => {
                     onShare={handleShare}
                     isAddingToCart={isAddingToCart}
                 />
-
-                {/* Action Buttons */}
                 <ProductActions
                     inStock={inStock}
                     isAddingToCart={isAddingToCart}
@@ -160,9 +156,9 @@ const ProductDetailsClient = memo(({ product, locale = 'ar' }) => {
                     onAddToCart={handleAddToCart}
                     onToggleFavorite={handleToggleFavorite}
                 />
-            </div>
+            </div> 
 
-           
+            
         </div>
     );
 });
