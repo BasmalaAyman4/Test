@@ -168,3 +168,5 @@ export const validateLangCode = (langCode) => {
     const validCodes = ['1', '2']; // 1 for Arabic, 2 for English
     return validCodes.includes(langCode);
 };
+
+

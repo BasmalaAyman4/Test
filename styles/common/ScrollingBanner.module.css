@@ -10,15 +10,22 @@
     align-items: center;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     margin: 20px 0;
+    /* Force LTR direction for the banner content */
+    direction: ltr;
 }
 
 /* Scrolling Content */
 .scrollingContent {
     display: flex;
     align-items: center;
-    animation: scroll 20s linear infinite;
     white-space: nowrap;
-       
+    /* Default animation for LTR */
+    animation: scrollLTR 20s linear infinite;
+}
+
+/* RTL specific animation */
+[dir="rtl"] .scrollingContent {
+    animation: scrollRTL 20s linear infinite;
 }
 
 /* Pause animation on hover */
@@ -38,6 +45,9 @@
     text-transform: uppercase;
     letter-spacing: 1px;
     padding: 20px 0;
+    /* Ensure text remains LTR */
+    direction: ltr;
+    unicode-bidi: embed;
 }
 
 /* Highlighted Items (UP TO 50% OFF) */
@@ -48,11 +58,8 @@
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-/* Sale Tags */
-
-
-/* Scroll Animation */
-@keyframes scroll {
+/* LTR Scroll Animation (left to right scrolling) */
+@keyframes scrollLTR {
     0% {
         transform: translateX(0);
     }
@@ -62,12 +69,29 @@
     }
 }
 
+/* RTL Scroll Animation (right to left scrolling) */
+@keyframes scrollRTL {
+    0% {
+        transform: translateX(-50%);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
 /* Add some visual separators */
 .bannerItem:not(.tag):not(:last-child)::after {
     content: " ";
     color: rgba(255, 255, 255, 0.6);
     margin-left: 30px;
     font-size: 12px;
+}
+
+/* RTL separator adjustment */
+[dir="rtl"] .bannerItem:not(.tag):not(:last-child)::after {
+    margin-left: 0;
+    margin-right: 30px;
 }
 
 /* Responsive Design */
@@ -93,7 +117,20 @@
     }
 
     .scrollingContent {
-        animation: scroll 15s linear infinite;
+        animation: scrollLTR 15s linear infinite;
+    }
+
+    [dir="rtl"] .scrollingContent {
+        animation: scrollRTL 15s linear infinite;
+    }
+
+    .bannerItem:not(.tag):not(:last-child)::after {
+        margin-left: 20px;
+    }
+
+    [dir="rtl"] .bannerItem:not(.tag):not(:last-child)::after {
+        margin-left: 0;
+        margin-right: 20px;
     }
 }
 
@@ -119,6 +156,65 @@
     }
 
     .scrollingContent {
-        animation: scroll 12s linear infinite;
+        animation: scrollLTR 12s linear infinite;
     }
+
+    [dir="rtl"] .scrollingContent {
+        animation: scrollRTL 12s linear infinite;
+    }
+
+    .bannerItem:not(.tag):not(:last-child)::after {
+        margin-left: 15px;
+    }
+
+    [dir="rtl"] .bannerItem:not(.tag):not(:last-child)::after {
+        margin-left: 0;
+        margin-right: 15px;
+    }
+}
+
+/* Additional RTL support for better text rendering */
+[dir="rtl"] .scrollingBanner {
+    /* Ensure the banner container respects RTL but content flows LTR */
+    text-align: left;
+}
+
+/* Smooth transition for direction changes */
+.scrollingContent {
+    transition: animation 0.3s ease;
+}
+
+/* Additional visual improvements */
+.scrollingBanner::before,
+.scrollingBanner::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.scrollingBanner::before {
+    left: 0;
+    background: linear-gradient(to right, rgba(241, 198, 198, 1), transparent);
+}
+
+.scrollingBanner::after {
+    right: 0;
+    background: linear-gradient(to left, rgba(241, 198, 198, 1), transparent);
+}
+
+/* RTL fade gradients */
+[dir="rtl"] .scrollingBanner::before {
+    right: 0;
+    left: auto;
+    background: linear-gradient(to left, rgba(241, 198, 198, 1), transparent);
+}
+
+[dir="rtl"] .scrollingBanner::after {
+    left: 0;
+    right: auto;
+    background: linear-gradient(to right, rgba(241, 198, 198, 1), transparent);
 }

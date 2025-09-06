@@ -24,7 +24,7 @@ body{
 font-family: "Alexandria", serif !important;
   margin: 0;
   font-size: 16px;
-
+overflow-x: hidden;
 }
 *{
   box-sizing: border-box;
