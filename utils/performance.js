@@ -63,28 +63,6 @@ export const createMemoryCache = (maxSize = 100) => {
     };
 };
 
-// Product image optimization utilities
-export const getOptimizedImageUrl = (url, width, height, quality = 75) => {
-    if (!url) return '';
-
-    // If using Next.js Image Optimization API
-    const params = new URLSearchParams({
-        url: encodeURIComponent(url),
-        w: width,
-        h: height,
-        q: quality,
-    });
-
-    return `/_next/image?${params.toString()}`;
-};
-
-export const getImageSrcSet = (url, sizes = [400, 800, 1200]) => {
-    if (!url) return '';
-
-    return sizes
-        .map(size => `${getOptimizedImageUrl(url, size)} ${size}w`)
-        .join(', ');
-};
 
 // Price formatting utilities with caching
 const priceFormatters = new Map();

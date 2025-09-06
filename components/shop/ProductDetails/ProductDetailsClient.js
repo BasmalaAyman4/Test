@@ -3,13 +3,12 @@ import { useState, useCallback, useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, ShoppingCart, Share2, ZoomIn } from 'lucide-react';
 import { useProductSelection } from '@/hooks/useProductSelection';
-import { useImagePreloader } from '@/hooks/useImagePreloader';
 import { getCachedPriceFormatter } from '@/utils/performance';
 import { ImageGallery } from './ImageGallery';
 import { ProductInfo } from './ProductInfo';
 import { ProductActions } from './ProductActions';
-import { ImageModal } from './ImageModal';
 import styles from '@/styles/shop/ProductDetails.module.css';
+import Image from 'next/image';
 
 const ProductDetailsClient = memo(({ product, locale = 'ar' }) => {
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -33,7 +32,6 @@ const ProductDetailsClient = memo(({ product, locale = 'ar' }) => {
         handleImageChange,
     } = useProductSelection(product);
 
-    const { isImageLoaded } = useImagePreloader(currentImages || []);
     // Memoized price formatter with error handling
     const priceFormatter = useMemo(() => {
         try {
@@ -108,6 +106,7 @@ const ProductDetailsClient = memo(({ product, locale = 'ar' }) => {
         setIsImageModalOpen(false);
     }, []);
 
+    console.log(currentImages,'currentImages')
     if (!selectedColor) {
         return (
             <div className={styles.errorContainer}>
@@ -129,15 +128,12 @@ const ProductDetailsClient = memo(({ product, locale = 'ar' }) => {
 
             <div className={styles.productContainer}>
                 {/* Image Section */}
-                <ImageGallery
-                    currentImages={currentImages}
-                    currentImage={currentImage}
-                    selectedImageIndex={selectedImageIndex}
-                    selectedColorIndex={selectedColorIndex}
-                    productName={product.name}
-                    onImageChange={handleImageChange}
-                    onImageClick={handleImageClick}
-                />
+                {
+                    currentImages.map(im=>(
+                        <Image key={im.imageId} alt='' src={im.fileLink} height={500} width={500} />
+
+                    ))
+                }
 
                 {/* Product Info Section */}
                 <ProductInfo
@@ -166,13 +162,7 @@ const ProductDetailsClient = memo(({ product, locale = 'ar' }) => {
                 />
             </div>
 
-            {/* Image Modal */}
-            <ImageModal
-                isOpen={isImageModalOpen}
-                currentImage={currentImage}
-                productName={product.name}
-                onClose={handleModalClose}
-            />
+           
         </div>
     );
 });

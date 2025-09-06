@@ -1,150 +1,309 @@
-'use client';
 
-import { useState, useCallback, memo } from 'react';
-import Image from 'next/image';
+
+import { ZoomIn, ChevronLeft, ChevronRight, Plus, Minus, RotateCcw, X } from "lucide-react";
+import { useCallback, useState, useEffect } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
-import { ZoomIn } from 'lucide-react';
 import styles from '@/styles/shop/ProductDetails.module.css';
+import Image from "next/image";
 
-const ProductImage = memo(({
-    image,
-    alt,
-    priority = false,
-    onLoad,
-    onClick,
-    className = styles.mainImage
-}) => {
-    const [isLoading, setIsLoading] = useState(true);
-    const [hasError, setHasError] = useState(false);
+export const ImageGallery = ({ images }) => {
+    const [currentIndex, setCurrentIndex] = useState(0);
 
-    const handleLoad = useCallback(() => {
-        setIsLoading(false);
-        setHasError(false);
-        onLoad?.();
-    }, [onLoad]);
+    // Zoom states
+    const [showZoom, setShowZoom] = useState(false);
+    const [zoomLevel, setZoomLevel] = useState(1);
+    const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-    const handleError = useCallback(() => {
-        setIsLoading(false);
-        setHasError(true);
+    const nextImage = useCallback(() => {
+        setCurrentIndex((prev) => (prev + 1) % images.length);
+    }, [images.length]);
+
+    const prevImage = useCallback(() => {
+        setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+    }, [images.length]);
+
+    // Reset zoom when image changes or zoom modal opens
+    useEffect(() => {
+        if (showZoom) {
+            setZoomLevel(1);
+            setPanOffset({ x: 0, y: 0 });
+        }
+    }, [currentIndex, showZoom]);
+
+    // Zoom handlers
+    const handleImageZoom = useCallback(() => {
+        setShowZoom(true);
     }, []);
 
-    // Use proxy for external images to avoid CORS issues
-    const getProxiedImageSrc = (src) => {
-        if (!src) return '/placeholder-image.jpg';
+    const handleZoomIn = useCallback(() => {
+        setZoomLevel(prev => Math.min(prev + 0.5, 4));
+    }, []);
 
-        // لو الصورة جاية من API → اعملها proxy
-        if (src.startsWith('http')) {
-            return `/api/image-proxy?url=${encodeURIComponent(src)}`;
+    const handleZoomOut = useCallback(() => {
+        setZoomLevel(prev => Math.max(prev - 0.5, 1));
+    }, []);
+
+    const handleResetZoom = useCallback(() => {
+        setZoomLevel(1);
+        setPanOffset({ x: 0, y: 0 });
+    }, []);
+
+    const handleWheel = useCallback((e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const delta = e.deltaY > 0 ? -0.3 : 0.3;
+        const newZoomLevel = Math.min(Math.max(zoomLevel + delta, 1), 4);
+        setZoomLevel(newZoomLevel);
+
+        if (newZoomLevel <= 1) {
+            setPanOffset({ x: 0, y: 0 });
         }
+    }, [zoomLevel]);
 
-        // الصور المحلية (من public)
-        return src;
-    };
+    const handleMouseDown = useCallback((e) => {
+        e.preventDefault();
+        e.stopPropagation();
 
-    if (!image?.fileLink || hasError) {
+        if (zoomLevel > 1) {
+            setIsDragging(true);
+            setDragStart({
+                x: e.clientX - panOffset.x,
+                y: e.clientY - panOffset.y
+            });
+            document.body.style.cursor = 'grabbing';
+        }
+    }, [zoomLevel, panOffset]);
+
+    const handleMouseMove = useCallback((e) => {
+        if (isDragging && zoomLevel > 1) {
+            e.preventDefault();
+            const newX = e.clientX - dragStart.x;
+            const newY = e.clientY - dragStart.y;
+            const maxPan = 200 * zoomLevel;
+            setPanOffset({
+                x: Math.max(-maxPan, Math.min(maxPan, newX)),
+                y: Math.max(-maxPan, Math.min(maxPan, newY))
+            });
+        }
+    }, [isDragging, dragStart, zoomLevel]);
+
+    const handleMouseUp = useCallback(() => {
+        setIsDragging(false);
+        document.body.style.cursor = 'default';
+    }, []);
+
+    const closeZoom = useCallback(() => {
+        setShowZoom(false);
+        setZoomLevel(1);
+        setPanOffset({ x: 0, y: 0 });
+        setIsDragging(false);
+        document.body.style.cursor = 'default';
+    }, []);
+
+    // Navigate in zoom modal
+    const navigateInZoom = useCallback((direction) => {
+        if (direction === 'next') {
+            nextImage();
+        } else {
+            prevImage();
+        }
+    }, [nextImage, prevImage]);
+
+    // Keyboard navigation in zoom modal
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (!showZoom) return;
+
+            switch (e.key) {
+                case 'Escape':
+                    closeZoom();
+                    break;
+                case 'ArrowLeft':
+                    navigateInZoom('prev');
+                    break;
+                case 'ArrowRight':
+                    navigateInZoom('next');
+                    break;
+                case '+':
+                case '=':
+                    handleZoomIn();
+                    break;
+                case '-':
+                    handleZoomOut();
+                    break;
+                case '0':
+                    handleResetZoom();
+                    break;
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [showZoom, closeZoom, navigateInZoom, handleZoomIn, handleZoomOut, handleResetZoom]);
+
+    if (!images.length) {
         return (
-            <div className={styles.imageWrapper}>
-                <div className={styles.imagePlaceholder}>
-                    <span>Image not available</span>
+            <div className={styles.mainImageContainer}>
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                    color: '#999'
+                }}>
+                    No image available
                 </div>
             </div>
         );
     }
 
     return (
-        <div className={styles.imageWrapper}>
-            {isLoading && <div className={styles.imageSkeleton} />}
-            <Image
-                src={getProxiedImageSrc(image.fileLink)}
-                alt={alt || 'Product image'}
-                fill
-                className={className}
-                priority={priority}
-                onLoad={handleLoad}
-                onError={handleError}
-                onClick={onClick}
-                sizes="(max-width: 768px) 100vw, 50vw"
-                quality={85}
-            />
-            {onClick && !isLoading && (
-                <button className={styles.zoomButton} onClick={onClick}>
-                    <ZoomIn size={20} />
-                </button>
-            )}
-        </div>
-    );
-});
+        <>
+            <div className={styles.imageSection}>
+                <div className={styles.mainImageContainer}>
+                    <Image
+                        src={images[currentIndex]}
+                        alt={`Product ${currentIndex + 1}`}
+                        className={styles.mainImage}
+                        onClick={handleImageZoom}
+                        fill
+                    />
 
-ProductImage.displayName = 'ProductImage';
+                    <div className={styles.zoomIndicator}>
+                        <ZoomIn size={16} />
+                    </div>
 
-export const ImageGallery = memo(({
-    currentImages,
-    currentImage,
-    selectedImageIndex,
-    selectedColorIndex,
-    productName,
-    onImageChange,
-    onImageClick
-}) => {
-    const getProxiedImageSrc = (src) => {
-        if (!src) return '/placeholder-image.jpg';
-
-        // لو الصورة جاية من API → اعملها proxy
-        if (src.startsWith('http')) {
-            return `/api/image-proxy?url=${encodeURIComponent(src)}`;
-        }
-
-        // الصور المحلية (من public)
-        return src;
-    };
-
-    return (
-        <div className={styles.imageSection}>
-            <div className={styles.mainImageContainer}>
-                <AnimatePresence mode="wait">
-                    {currentImage?.fileLink && (
-                        <motion.div
-                            key={`${selectedColorIndex}-${selectedImageIndex}`}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 1.05 }}
-                            transition={{ duration: 0.3 }}
-                        >
-                            <ProductImage
-                                image={currentImage}
-                                alt={productName}
-                                priority={selectedImageIndex === 0}
-                                onClick={onImageClick}
-                            />
-                        </motion.div>
+                    {images.length > 1 && (
+                        <>
+                            <button
+                                onClick={prevImage}
+                                className={`${styles.navigationButton} ${styles.prevButton}`}
+                            >
+                                <ChevronLeft size={20} />
+                            </button>
+                            <button
+                                onClick={nextImage}
+                                className={`${styles.navigationButton} ${styles.nextButton}`}
+                            >
+                                <ChevronRight size={20} />
+                            </button>
+                        </>
                     )}
-                </AnimatePresence>
+                </div>
+
+                {images.length > 1 && (
+                    <div className={styles.thumbnailContainer}>
+                        {images.slice(0, 4).map((image, index) => (
+                            <button
+                                key={index}
+                                onClick={() => setCurrentIndex(index)}
+                                className={`${styles.thumbnail} ${index === currentIndex ? styles.active : ''}`}
+                            >
+                                <Image
+                                fill
+                                    src={image}
+                                    alt={`Thumbnail ${index + 1}`}
+                                    className={styles.thumbnailImage}
+                                />
+                            </button>
+                        ))}
+                        {images.length > 4 && (
+                            <div className={styles.moreImages}>
+                                +{images.length - 4}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
-            {/* Thumbnail Images */}
-            {currentImages && currentImages.length > 1 && (
-                <div className={styles.thumbnailContainer}>
-                    {currentImages.map((image, index) => (
-                        <button
-                            key={`${selectedColorIndex}-${index}`}
-                            className={`${styles.thumbnail} ${index === selectedImageIndex ? styles.thumbnailActive : ''}`}
-                            onClick={() => onImageChange(index)}
-                            aria-label={`View image ${index + 1}`}
-                        >
-                            <Image
-                                src={getProxiedImageSrc(image.fileLink)}
-                                alt={`${productName} view ${index + 1}`}
-                                fill
-                                className={styles.thumbnailImage}
-                                sizes="100px"
-                                quality={60}
-                            />
-                        </button>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-});
+            {/* Enhanced Image Zoom Modal */}
+            <AnimatePresence>
+                {showZoom && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className={styles.zoomModal}
+                        onClick={closeZoom}
+                        onMouseMove={handleMouseMove}
+                        onMouseUp={handleMouseUp}
+                        onMouseLeave={handleMouseUp}
+                    >
 
-ImageGallery.displayName = 'ImageGallery';
+
+                        {/* Zoom Controls */}
+                        <div className={styles.zoomControls} onClick={(e) => e.stopPropagation()}>
+                            <button onClick={handleZoomOut} className={styles.zoomButton}>
+                                <Minus size={20} />
+                            </button>
+                            <span className={styles.zoomLevel}>{Math.round(zoomLevel * 100)}%</span>
+                            <button onClick={handleZoomIn} className={styles.zoomButton}>
+                                <Plus size={20} />
+                            </button>
+                            <button onClick={handleResetZoom} className={styles.zoomButton}>
+                                <RotateCcw size={20} />
+                            </button>
+                        </div>
+
+                        {/* Navigation in zoom modal */}
+                        {images.length > 1 && (
+                            <>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigateInZoom('prev');
+                                    }}
+                                    className={`${styles.zoomNavigationButton} ${styles.zoomPrevButton}`}
+                                >
+                                    <ChevronLeft size={24} />
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigateInZoom('next');
+                                    }}
+                                    className={`${styles.zoomNavigationButton} ${styles.zoomNextButton}`}
+                                >
+                                    <ChevronRight size={24} />
+                                </button>
+                            </>
+                        )}
+
+                        {/* Image counter */}
+                        {images.length > 1 && (
+                            <div className={styles.imageCounter} onClick={(e) => e.stopPropagation()}>
+                                {currentIndex + 1} / {images.length}
+                            </div>
+                        )}
+
+                        {/* Zoomed Image */}
+                        <Image
+                            src={images[currentIndex]}
+                            alt="Zoomed product"
+                            className={styles.zoomImage}
+                            style={{
+                                transform: `scale(${zoomLevel}) translate(${panOffset.x}px, ${panOffset.y}px)`,
+                                cursor: zoomLevel > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
+                                transformOrigin: 'center center',
+                                transition: isDragging ? 'none' : 'transform 0.2s ease-out',
+                                userSelect: 'none',
+                                pointerEvents: 'auto'
+                            }}
+                            onWheel={handleWheel}
+                            onMouseDown={handleMouseDown}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (zoomLevel <= 1.5) {
+                                    setZoomLevel(2);
+                                }
+                            }}
+                            draggable={false}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </>
+    );
+};
